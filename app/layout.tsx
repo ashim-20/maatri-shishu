@@ -5,7 +5,6 @@ import { ServiceWorkerCleanup } from '@/components/service-worker-cleanup'
 
 export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
-  themeColor: '#0c756d',
   title: 'MaatriShishu · Mother & child care',
   description: 'A focused follow-up workspace for community health volunteers in Parsa.',
   generator: 'v0.app',
@@ -29,11 +28,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#f7f8f6',
 }
 
 export default function RootLayout({

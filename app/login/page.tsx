@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <main className="auth-shell">
       <section className="auth-card" aria-labelledby="login-title">
-        <div className="brand-mark"><span className="brand-dot" /> Maatri-Shishu</div>
+        <div className="auth-brand"><span className="brand-dot" /> Maatri-Shishu</div>
         <p className="eyebrow">Field health workspace</p>
         <h1 id="login-title">Sign in to your workspace</h1>
         <p className="auth-copy">Sign in to access the Maatri-Shishu MVP workspace.</p>
@@ -39,7 +39,7 @@ export default function LoginPage() {
           <button className="primary-button" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button>
         </form>
         {message && <p className="auth-message" role="alert">{message}</p>}
-        <div className="auth-links"><Link href="/forgot-password">Forgot password?</Link><Link href="/sign-up">Request an account</Link></div>
+        <div className="auth-links"><Link href="/forgot-password">Forgot password?</Link><Link href="/sign-up">Create an account</Link></div>
       </section>
     </main>
   )
