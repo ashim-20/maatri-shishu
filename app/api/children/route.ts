@@ -6,16 +6,21 @@ const childFields = 'id, mother_id, full_name, date_of_birth, sex, birth_weight_
 async function authorizedClient() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { supabase, user: null }
-  const { data: staff } = await supabase.from('staff_users').select('id, status').eq('id', user.id).maybeSingle()
-  return { supabase, user: staff?.status === 'active' ? user : null }
+  if (!user) return { supabase, user: null, staff: null }
+  const { data: staff } = await supabase.from('staff_users').select('id, role, status').eq('id', user.id).maybeSingle()
+  return { supabase, user: staff?.status === 'active' ? user : null, staff }
 }
 
 export async function GET(request: Request) {
-  const { supabase, user } = await authorizedClient()
+  const { supabase, user, staff } = await authorizedClient()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const query = new URL(request.url).searchParams.get('q')?.trim() || ''
   let builder = supabase.from('children').select(childFields).order('updated_at', { ascending: false }).limit(100)
+  if (staff?.role !== 'admin') {
+    const { data: assignedMothers } = await supabase.from('mothers').select('id').eq('assigned_staff_id', user.id)
+    const motherIds = (assignedMothers || []).map((mother) => mother.id)
+    builder = motherIds.length ? builder.in('mother_id', motherIds) : builder.eq('mother_id', '00000000-0000-0000-0000-000000000000')
+  }
   if (query) builder = builder.ilike('full_name', `%${query.replaceAll('%', '')}%`)
   const { data, error } = await builder
   if (error) return NextResponse.json({ error: 'Unable to load authorized records.' }, { status: 500 })
@@ -23,8 +28,13 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const { supabase, user } = await authorizedClient()
+  const { supabase, user, staff } = await authorizedClient()
   const id = new URL(request.url).searchParams.get('id')
+  if (user && staff?.role !== 'admin' && id) {
+    const { data: child } = await supabase.from('children').select('mother_id').eq('id', id).maybeSingle()
+    const { count } = child?.mother_id ? await supabase.from('mothers').select('id', { count: 'exact', head: true }).eq('id', child.mother_id).eq('assigned_staff_id', user.id) : { count: 0 }
+    if (!count) return NextResponse.json({ error: 'This record is outside your authorized catchment.' }, { status: 403 })
+  }
   if (!user || !id) return NextResponse.json({ error: 'Authorized user and record id are required.' }, { status: 401 })
   const body = await request.json().catch(() => null)
   const update: Record<string, unknown> = {}
@@ -41,9 +51,13 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { supabase, user } = await authorizedClient()
+  const { supabase, user, staff } = await authorizedClient()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await request.json().catch(() => null)
+  if (staff?.role !== 'admin' && body?.mother_id) {
+    const { count } = await supabase.from('mothers').select('id', { count: 'exact', head: true }).eq('id', body.mother_id).eq('assigned_staff_id', user.id)
+    if (!count) return NextResponse.json({ error: 'The selected mother is outside your authorized catchment.' }, { status: 403 })
+  }
   const fullName = typeof body?.full_name === 'string' ? body.full_name.trim() : ''
   const dob = typeof body?.date_of_birth === 'string' ? body.date_of_birth : ''
   if (!fullName || fullName.length > 120 || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) return NextResponse.json({ error: 'Name and a valid date of birth are required.' }, { status: 400 })
