@@ -30,7 +30,7 @@ export default function LoginPage() {
         <div className="brand-mark"><span className="brand-dot" /> Maatri-Shishu</div>
         <p className="eyebrow">Field health workspace</p>
         <h1 id="login-title">Sign in to your workspace</h1>
-        <p className="auth-copy">Use your approved FCHV or health-post account.</p>
+        <p className="auth-copy">Sign in to access the Maatri-Shishu MVP workspace.</p>
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="email">Work email</label>
           <input id="email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />

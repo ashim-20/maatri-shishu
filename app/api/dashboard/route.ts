@@ -12,8 +12,6 @@ export async function GET() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { data: staff } = await supabase.from('staff_users').select('id, status, role').eq('id', user.id).maybeSingle()
-  if (staff?.status !== 'active') return NextResponse.json({ error: 'Staff approval required.' }, { status: 403 })
 
   const [mothers, children, vaccinations, anc, pnc, followUp, upcoming, syncPending, sessions] = await Promise.all([
     count(supabase, 'mothers'), count(supabase, 'children'), count(supabase, 'vaccination_events'),
