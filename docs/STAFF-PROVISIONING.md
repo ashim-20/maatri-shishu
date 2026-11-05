@@ -8,6 +8,7 @@ Apply these migrations to the connected Supabase project through the Supabase MC
 
 1. `supabase/migrations/202611030001_public_health_schema.sql`
 2. `supabase/migrations/202611040001_staff_approval.sql`
+3. `supabase/migrations/202611050001_staff_rejected_status.sql`
 
 The second migration adds the approval state and the `on_auth_user_created` trigger. New Auth users receive a `public.staff_users` row with `status = 'active'`.
 
@@ -16,7 +17,7 @@ The second migration adds the approval state and the `on_auth_user_created` trig
 - `staff_users.id`: UUID referencing `auth.users(id)`.
 - `display_name`: required display name.
 - `role`: `admin`, `supervisor`, or `health_worker`.
-- `status`: `pending`, `active`, or `suspended`.
+- `status`: `pending`, `active`, `rejected`, or `suspended`.
 - `clinic_name`: optional clinic label.
 
 Only `status = 'active'` passes `public.is_staff()` and can use protected clinical APIs. Only an active `admin` can use the staff approval API.
@@ -36,8 +37,8 @@ For the provisioning script only, use server/operator environment variables:
 - `STAFF_EMAIL`
 - `STAFF_PASSWORD`
 - `STAFF_NAME` optional
-- `STAFF_ROLE` optional: `admin`, `supervisor`, or `health_worker`
-- `STAFF_STATUS` optional: `active`, `pending`, or `suspended`
+- `STAFF_ROLE` optional: `admin`, `supervisor`, or `health_worker`; defaults to `admin`
+- `STAFF_STATUS` optional: `active`, `pending`, or `suspended`; defaults to `active`
 
 Never use `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` with a `NEXT_PUBLIC_` prefix, in client code, in a browser request, or in a committed `.env` file.
 
@@ -49,7 +50,7 @@ The exact script is:
 scripts/provision-staff.mjs
 ```
 
-It uses the Supabase Auth Admin REST API and the PostgREST service-role connection. It creates a confirmed Auth user when needed, resolves an existing user by email when possible, and upserts the corresponding `staff_users` row. It is safe to rerun for the same email; it does not create a public admin signup route.
+It uses the Supabase Auth Admin REST API and the PostgREST service-role connection. It creates a confirmed Auth user when needed, resolves an existing user by email when possible, and upserts exactly one `staff_users` row by the Auth UUID. It is safe to rerun for the same email and does not create a public admin signup route. When creating the first administrator, omit `STAFF_ROLE` and `STAFF_STATUS` to use the secure defaults `admin` and `active`.
 
 Run it only from a trusted server/operator shell:
 

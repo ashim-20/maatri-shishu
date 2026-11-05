@@ -1,7 +1,7 @@
 const required = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'STAFF_EMAIL', 'STAFF_PASSWORD']
 for (const key of required) if (!process.env[key]) throw new Error(`Missing ${key}`)
 
-const role = ['admin', 'supervisor', 'health_worker'].includes(process.env.STAFF_ROLE) ? process.env.STAFF_ROLE : 'health_worker'
+const role = ['admin', 'supervisor', 'health_worker'].includes(process.env.STAFF_ROLE) ? process.env.STAFF_ROLE : 'admin'
 const status = ['active', 'pending', 'suspended'].includes(process.env.STAFF_STATUS) ? process.env.STAFF_STATUS : 'active'
 const headers = { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' }
 const base = process.env.SUPABASE_URL.replace(/\/$/, '')
