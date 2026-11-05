@@ -7,7 +7,7 @@ begin
   insert into public.staff_users (id, display_name, role, status)
   values (new.id, coalesce(nullif(trim(new.raw_user_meta_data ->> 'display_name'), ''), split_part(new.email, '@', 1)),
     case when coalesce(new.raw_user_meta_data ->> 'role', '') in ('admin', 'supervisor', 'health_worker') then new.raw_user_meta_data ->> 'role' else 'health_worker' end,
-    'pending')
+    'active')
   on conflict (id) do nothing;
   return new;
 end;
