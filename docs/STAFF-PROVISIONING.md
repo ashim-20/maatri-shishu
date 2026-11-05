@@ -9,7 +9,7 @@ Apply these migrations to the connected Supabase project through the Supabase MC
 1. `supabase/migrations/202611030001_public_health_schema.sql`
 2. `supabase/migrations/202611040001_staff_approval.sql`
 
-The second migration adds the approval state and the `on_auth_user_created` trigger. New Auth users receive a `public.staff_users` row with `status = 'pending'`.
+The second migration adds the approval state and the `on_auth_user_created` trigger. New Auth users receive a `public.staff_users` row with `status = 'active'`.
 
 ### Staff columns and values
 
@@ -87,7 +87,7 @@ A direct dashboard request without a session redirects to `/login`. A signed-in 
 
 ## 6. Approve subsequent staff
 
-A user signing up through `/sign-up` receives a pending staff row. An active administrator can:
+A user signing up through `/sign-up` receives an active staff row and can use the protected clinical APIs immediately. An active administrator can:
 
 - `GET /api/admin/staff` to list staff.
 - `PATCH /api/admin/staff?id=<STAFF_USER_ID>` with `{ "status": "active" }` to approve.
